@@ -1,4 +1,5 @@
 import serial
+import time
 
 header1 = 0xFF
 header2 = 0xFE
@@ -22,6 +23,12 @@ def main() :
     
     for data in data_array :
         ser.write(data.to_bytes(1, byteorder='big'))
+    
+    time.sleep(5)
+    if mode == 0x01 :
+        mode = 0x00
+    else :
+        mode = 0x01
 
 
 if __name__ == "__main__" :
