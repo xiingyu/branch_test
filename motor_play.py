@@ -18,6 +18,7 @@ data_array = bytes([header1, header2, motor_id, datasize, checksum, mode, direct
 reset_array = bytes([0xFF, 0xFE, 0x00, 0x02, 0xF0, 0x0D])
 
 def main() :
+    global mode
     
     ser = serial.Serial('/dev/ttyUSB0',9600, timeout = 5) 
     
