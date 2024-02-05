@@ -34,16 +34,14 @@ def main() :
     while True :
 
         checksum = (~(motor_id + datasize + mode + direction + position1 + position2 + velocity1 + velocity2)&0xFF)
+        data_array = bytes([header1, header2, motor_id, datasize, checksum, mode, direction, position1, position2, velocity1, velocity2])  
         
         
         for data in data_array :
             ser.write(data.to_bytes(1, byteorder='big'))
         
-        time.sleep(5)
-        if mode == 0x01 :
-            mode = 0x00
-        else :
-            mode = 0x01
+        time.sleep(1)
+        position2+=0x20
 
 
 if __name__ == "__main__" :
