@@ -13,7 +13,7 @@ def main() :
         else :
             cv2.imshow("img", img)
 
-            key = cv2.waitKey(1000)
+            key = cv2.waitKey(1)
             if key == ord('q') :
                 break
 
