@@ -6,7 +6,6 @@ def main() :
 
     while True :
         ret, img = cap.read()
-        print(img.shape)
 
         if not ret :
             print("fail to connection")
@@ -18,8 +17,8 @@ def main() :
             if key == ord('q') :
                 break
 
-        cap.release()
-        cv2.destroyAllWindows()
+    cap.release()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__" :
