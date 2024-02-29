@@ -9,7 +9,9 @@ setup(
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
+        ('share/' + package_name, ['package.xml']),        
+        # Include your RViz configuration file
+        ('share/' + package_name, ['rviz/sc_m.rviz']),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -19,7 +21,8 @@ setup(
     license='TODO: License declaration',
     tests_require=['pytest'],
     entry_points={
-        'console_scripts': [
+        'console_scripts': [            
+            'sc_mini = lidar.sc_mini:main',
         ],
     },
 )
