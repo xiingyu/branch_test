@@ -3,7 +3,7 @@ from rclpy.node import Node
 from sensor_msgs.msg import LaserScan
 import math
 
-# ROS 2 노드를 정의하는 클래스
+
 class LidarNode(Node):
 
     def __init__(self):
@@ -17,15 +17,9 @@ class LidarNode(Node):
         self.range_max = 12.0
         self.ros_n_mul = 2
 
-        # ROS 2로 변환될 때 사용할 publisher 정의
         self.publisher_ = self.create_publisher(LaserScan, 'scan', 10)
 
-        # ROS 1 노드에서 사용되는 함수들을 여기에 추가하여 ROS 1 코드를 이식합니다.
-        # 예: serial 통신 설정, 데이터 처리 함수 등
-
     def point_cloud_filter(self, scan):
-        # 레이저 스캔 데이터의 간단한 필터링 함수
-        # 여기에 필터링 로직 추가
         pass
 
     def angle_insert(self, scan_in):
@@ -56,11 +50,7 @@ class LidarNode(Node):
         return scan_out
 
     def poll(self):
-        # 레이더 데이터 수신 함수
         scan = LaserScan()
-
-        # 여기에 레이더 데이터 수신 및 처리 로직 추가
-
         return scan
 
     def run(self):
@@ -77,9 +67,14 @@ class LidarNode(Node):
 # ROS 2 노드 실행
 def main(args=None):
     rclpy.init(args=args)
-    lidar_node = LidarNode()
-    lidar_node.run()
-    rclpy.shutdown()
+    node = LidarNode()
+    try :
+        rclpy.spin(node.run())
+    except KeyboardInterrupt :
+        node.get_logger().info("interrupted")
+    finally :
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

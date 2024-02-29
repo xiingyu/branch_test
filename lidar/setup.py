@@ -1,4 +1,5 @@
 from setuptools import find_packages, setup
+import os, glob
 
 package_name = 'lidar'
 
@@ -11,7 +12,7 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),        
         # Include your RViz configuration file
-        ('share/' + package_name, ['rviz/sc_m.rviz']),
+        (os.path.join('share', package_name, 'launch'),( glob.glob(os.path.join('launch', '*launch.py')))),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
