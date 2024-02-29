@@ -1,0 +1,114 @@
+visualization_manager:
+  class: ""
+  displays:
+    - alpha: 0.5
+      cell_size: 1
+      class: rviz/Grid
+      color: 160; 160; 164
+      enabled: true
+      line_style:
+        line_width: 0.0299999993
+        value: Lines
+      name: Grid
+      normal_cell_count: 0
+      offset:
+        x: 0
+        y: 0
+        z: 0
+      plane: XY
+      plane_cell_count: 10
+      reference_frame: "<Fixed Frame>"
+      value: true
+    - alpha: 1
+      autocompute_intensity_bounds: true
+      autocompute_value_bounds:
+        max_value: 10
+        min_value: -10
+        value: true
+      axis: Z
+      channel_name: intensity
+      class: rviz/LaserScan
+      color: 255; 255; 255
+      color_transformer: Intensity
+      decay_time: 0
+      enabled: true
+      invert_rainbow: false
+      max_color: 255; 255; 255
+      max_intensity: 127
+      min_color: 0; 0; 0
+      min_intensity: 127
+      name: LaserScan
+      position_transformer: XYZ
+      queue_size: 10
+      selectable: true
+      size_pixels: 3
+      size_m: 0.0299999993
+      style: Flat Squares
+      topic: /scan
+      unreliable: false
+      use_fixed_frame: true
+      use_rainbow: true
+      value: true
+  enabled: true
+  global_options:
+    background_color: 108; 108; 108
+    default_light: true
+    fixed_frame: laser_link
+    frame_rate: 30
+  name: root
+  tools:
+    - class: rviz/Interact
+      hide_inactive_objects: true
+    - class: rviz/MoveCamera
+    - class: rviz/Select
+    - class: rviz/FocusCamera
+    - class: rviz/Measure
+    - class: rviz/SetInitialPose
+      topic: /initialpose
+    - class: rviz/SetGoal
+      topic: /move_base_simple/goal
+    - class: rviz/PublishPoint
+      single_click: true
+      topic: /clicked_point
+  value: true
+  views:
+    current:
+      class: rviz/Orbit
+      distance: 3.12298799
+      enable_stereo_rendering:
+        stereo_eye_separation: 0.0599999987
+        stereo_focal_distance: 1
+        swap_stereo_eyes: false
+        value: false
+      focal_point:
+        x: 0
+        y: 0
+        z: 0
+      focal_shape_fixed_size: true
+      focal_shape_size: 0.0500000007
+      invert_z_axis: false
+      name: Current View
+      near_clip_distance: 0.00999999978
+      pitch: 1.39479649
+      target_frame: "<Fixed Frame>"
+      value: Orbit (rviz)
+      yaw: 2.3903966
+    saved: ~
+window_geometry:
+  displays:
+    collapsed: false
+  height: 716
+  hide_left_dock: false
+  hide_right_dock: false
+  qmain_window_state: 000000ff00000000fd0000000400000000000001d600000242fc0200000008fb0000001200530065006c0065006300740069006f006e00000001e10000009b0000006100fffffffb0000001e0054006f006f006c002000500072006f007000650072007400690065007302000001ed000001df00000185000000a3fb000000120056006900650077007300200054006f006f02000001df000002110000018500000122fb000000200054006f006f006c002000500072006f0070006500720074006900650073003203000002880000011d000002210000017afb000000100044006900730070006c006100790073010000002800000242000000d700fffffffb0000002000730065006c0065006300740069006f006e00200062007500660066006500720200000138000000aa0000023a00000294fb00000014005700690064006500530074006500720065006f02000000e6000000d2000003ee0000030bfb0000000c004b0069006e0065006300740200000186000001060000030c00000261000000010000010f00000242fc0200000003fb0000001e0054006f006f006c002000500072006f00700065007200740069006500730100000041000000780000000000000000fb0000000a00560069006500770073000000002800000242000000ad00fffffffb0000001200530065006c0065006300740069006f006e010000025a000000b200000000000000000000000200000490000000a9fc0100000001fb0000000a00560069006500770073030000004e00000080000002e10000019700000003000004b00000003efc0100000002fb0000000800540069006d00650100000000000004b00000030000fffffffb0000000800540069006d00650100000000000004500000000000000000000002d40000024200000004000000040000000800000008fc0000000100000002000000010000000a0054006f006f006c00730100000000ffffffff0000000000000000
+  selection:
+    collapsed: false
+  time:
+    collapsed: false
+  tool_properties:
+    collapsed: false
+  views:
+    collapsed: false
+  width: 1200
+  x: 67
+  y: 24
