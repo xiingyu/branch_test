@@ -2,10 +2,13 @@ import cv2
 import time
 
 def main() :
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(0)   
+    print("passed cap")
 
     while True :
         ret, img = cap.read()
+
+        print(ret)
 
         if not ret :
             print("fail to connection")
