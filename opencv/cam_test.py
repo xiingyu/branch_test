@@ -1,8 +1,11 @@
 import cv2
 import time
 
+# cam2 depth  frame
+# cam4 origin frame
+
 def main() :
-    cap = cv2.VideoCapture(0)   
+    cap = cv2.VideoCapture(2)   
     print("passed cap")
 
     while True :
