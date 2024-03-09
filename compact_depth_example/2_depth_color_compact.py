@@ -5,27 +5,8 @@ import cv2
 pipeline = rs.pipeline()
 config = rs.config()
 
-pipeline_wrapper = rs.pipeline_wrapper(pipeline)
-pipeline_profile = config.resolve(pipeline_wrapper)
-device = pipeline_profile.get_device()
-device_product_line = str(device.get_info(rs.camera_info.product_line))
-
-found_rgb = False
-for s in device.sensors:
-    if s.get_info(rs.camera_info.name) == 'RGB Camera':
-        found_rgb = True
-        break
-
-
-if not found_rgb:
-    print("The demo requires Depth camera with Color sensor")
-    exit(0)
-
-
 
 config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
-
-
 config.enable_stream(rs.stream.color, 640, 480, rs.format.bgr8, 30)
 
 
@@ -50,7 +31,6 @@ try:
         depth_colormap_dim = depth_colormap.shape
         color_colormap_dim = color_image.shape
 
-        ####
         #### remember. it's good examples for hstack
 
         # If depth and color resolutions are different, resize color image to match depth image for display
@@ -59,7 +39,6 @@ try:
             images = np.hstack((resized_color_image, depth_colormap))
         else:
             images = np.hstack((color_image, depth_colormap))
-
         ####
 
         cv2.namedWindow('RealSense', cv2.WINDOW_AUTOSIZE)
