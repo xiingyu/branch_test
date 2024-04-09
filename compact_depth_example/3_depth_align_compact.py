@@ -49,10 +49,17 @@ try:
         #   depth align to color on left
         #   depth on right
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.03), cv2.COLORMAP_JET)
+        
         images = np.hstack((bg_removed, depth_colormap))
-
-        cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
+        
+        # cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
         cv2.imshow('Align Example', images)
+        
+        
+        # cv2.imshow('align',bg_removed)
+        # cv2.imshow('color', depth_colormap)
+        
+        
         key = cv2.waitKey(1)
         # Press esc or 'q' to close the image window
         if key & 0xFF == ord('q') or key == 27:
