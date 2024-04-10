@@ -54,6 +54,13 @@ try:
         
         # cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
         cv2.imshow('Align Example', images)
+        cv2.imshow('depth_image_3d',depth_image)
+        # print(depth_image.shape)
+        # print(depth_image.dtype)##uint16 data type.
+        
+        # depth_image_uint8 = (depth_image/256).astype(np.uint8)
+        # cv2.imshow('depth_image_uint8',depth_image_uint8)
+        # print(depth_image_uint8)
         
         
         # cv2.imshow('align',bg_removed)
