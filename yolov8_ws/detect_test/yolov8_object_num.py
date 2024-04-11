@@ -6,9 +6,8 @@ from ultralytics import YOLO
 ###wth depth,        3 4
 
 def apply_yolo(image) :
-    result = model.predict(image, classes=[0., 67.], conf= 0.25)
+    result = model.predict(image, classes=[0., 67.], conf= 0.25, max_det = 1)
     annotated_img = result[0].plot()
-    
     
     for r in result :
         print(r.boxes)

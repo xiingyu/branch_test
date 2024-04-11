@@ -39,31 +39,38 @@ try:
         depth_image = np.asanyarray(aligned_depth_frame.get_data())
         color_image = np.asanyarray(color_frame.get_data())
         
-        result = model.predict(color_image, classes=[0., 67.], conf= 0.25)
+        result = model.predict(color_image, classes=[0., 67.], conf= 0.25, max_det = 1)
         annotated_img = result[0].plot()
 
         # Remove background - Set pixels further than clipping_distance to grey
         grey_color = 0
         depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
         bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
+        
+        object_xy = np.array(result[0].boxes.xywh.detach().numpy().tolist()[0], dtype='uint8')
+        # for r in result :
+        #     print(r.boxes.xywh.detach().numpy().tolist()[0]) ###원래 이건데 대체했음.
+        print(object_xy[0], object_xy[1]) ### 640 by 480 
 
-        # Render images:
-        #   depth align to color on left
-        #   depth on right
         depth_colormap = cv2.applyColorMap(cv2.convertScaleAbs(depth_image, alpha=0.05), cv2.COLORMAP_JET)
         
         images = np.hstack((bg_removed, depth_colormap))
+        
+        
+        
+        # print(depth_image.shape) ### 480 by 640
+        # print(f'distance between cam and object is {depth_image[object_xy[1]][object_xy[0]]}')
+        print(f'distance between cam and object is {depth_image[object_xy[1]][object_xy[0]]}')
+        
+        annotated_img = cv2.circle(annotated_img,((object_xy[0]),(object_xy[1])),10,(255,0,0), -1, cv2.LINE_AA)
         
         # cv2.namedWindow('Align Example', cv2.WINDOW_NORMAL)
         cv2.imshow('Align Example', images)
         cv2.imshow('depth_image_3d',depth_image)
         cv2.imshow('yolo',annotated_img)
-        # print(depth_image.shape)
-        # print(depth_image.dtype)##uint16 data type.
         
-        # depth_image_uint8 = (depth_image/256).astype(np.uint8)
-        # cv2.imshow('depth_image_uint8',depth_image_uint8)
-        # print(depth_image_uint8)
+        
+        
         
         
         # cv2.imshow('align',bg_removed)
