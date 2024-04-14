@@ -13,11 +13,20 @@ def apply_yolo(image) :
     #     print(f'{r.boxes}')
     
     ### numpy().tolist() mean, array to python list. array의 차원을 그대로 가져감.
-    for r in result :
-        print(r.boxes.xywh.detach().numpy().tolist())
-        print(r.boxes.xywhn.detach().numpy().tolist())
-        print(r.boxes.xyxy.detach().numpy().tolist())
-        print(r.boxes.xyxyn.detach().numpy().tolist())
+    
+    object_xywh = np.array(result[0].boxes.xywh.detach().numpy().tolist()[0], dtype='int')
+    object_xywhn = np.array(result[0].boxes.xywhn.detach().numpy().tolist()[0], dtype='int')
+    object_xyxy = np.array(result[0].boxes.xyxy.detach().numpy().tolist()[0], dtype='int')
+    object_xyxyn = np.array(result[0].boxes.xyxyn.detach().numpy().tolist()[0], dtype='int')
+    print(object_xywh)
+    print(object_xywhn)
+    print(object_xyxy)
+    print(object_xyxyn)
+    # for r in result :
+    #     print(r.boxes.xywh.detach().numpy().tolist())
+    #     print(r.boxes.xywhn.detach().numpy().tolist())
+    #     print(r.boxes.xyxy.detach().numpy().tolist())
+    #     print(r.boxes.xyxyn.detach().numpy().tolist())
     
     
     annotated_img = result[0].plot()

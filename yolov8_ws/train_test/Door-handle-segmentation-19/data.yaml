@@ -1,0 +1,13 @@
+names:
+- door-handle
+- door-knob
+nc: 2
+roboflow:
+  license: CC BY 4.0
+  project: door-handle-segmentation
+  url: https://universe.roboflow.com/julien-vadeboncoeur-xvuem/door-handle-segmentation/dataset/19
+  version: 19
+  workspace: julien-vadeboncoeur-xvuem
+test: /home/skh/testing_folder/yolov8_ws/train_test/Door-handle-segmentation-19/test.txt
+train: /home/skh/testing_folder/yolov8_ws/train_test/Door-handle-segmentation-19/train.txt
+val: /home/skh/testing_folder/yolov8_ws/train_test/Door-handle-segmentation-19/valid.txt
