@@ -17,7 +17,7 @@ def main() :
         if not ret :
             print(f'fail to connect cam to {cam_num}')
         else :
-            result = model.predict(img, classes=[0., 1.], conf= 0.25 ) 
+            result = model.predict(img, classes=[0., 1.], conf= 0.6 ) 
             annotated_img = result[0].plot()
             cv2.imshow('real', img)
             cv2.imshow('yolo',annotated_img)

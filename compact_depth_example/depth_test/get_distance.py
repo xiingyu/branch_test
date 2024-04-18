@@ -85,7 +85,6 @@ try:
         cv2.imshow('depth_image_3d',depth_image)
         cv2.imshow('yolo', annotated_img)
         
-        
         key = cv2.waitKey(1)
         # Press esc or 'q' to close the image window
         if key & 0xFF == ord('q') or key == 27:
