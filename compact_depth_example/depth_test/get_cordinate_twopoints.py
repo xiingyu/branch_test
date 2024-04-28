@@ -4,8 +4,11 @@ import cv2
 import time
 import math
 
+### parameter init
 img_size_x = 1280
 img_size_y = 720
+x_d_value = ( img_size_x / 2 ) / math.tan(34.5/180 * np.pi)
+y_d_value = ( img_size_y / 2 ) / math.tan(21/180 * np.pi)
 
 pipeline = rs.pipeline()
 config = rs.config()
@@ -67,7 +70,7 @@ try:
         depth_image_3d = np.dstack((depth_image,depth_image,depth_image)) #depth image is 1 channel, color is 3 channels
         bg_removed = np.where((depth_image_3d > clipping_distance) | (depth_image_3d <= 0), grey_color, color_image)
         
-        #640 by 360
+        #640 by 360   xy
         color_img = cv2.circle(color_img,(int(img_size_x/2),int(img_size_y/2)),5,(0,0,255), -1, cv2.LINE_AA)
         
         # print(f'distance between cam and object is {depth_image[object_xy[1]][object_xy[0]]}')
@@ -88,7 +91,7 @@ try:
         center_distance = depth_image[int(img_size_y/2)][int(img_size_x/2)] * depth_scale        
         cv2.putText(color_img, f'{center_distance:.4f} m', (30,30), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
         
-        if circles :
+        if circles : ##maybe xy
             if len(circles) == 2 :
                 for circle in circles:
                     color_img = cv2.circle(color_img, circle, 5,(0, 0, 255), -1, cv2.LINE_AA)
@@ -96,10 +99,10 @@ try:
                 second_distance = depth_image[circles[1][1]][circles[1][0]] * depth_scale
                 
                 if not (first_distance <= 0) or (second_distance <= 0) :
-                    first_cordinate_x = math.tan(abs(img_size_x-circles[0][0])/first_distance) * first_distance *(1 if circles[0][0] >= img_size_x/2 else -1)
-                    first_cordinate_y = math.tan(abs(img_size_y-circles[0][1])/first_distance) * first_distance * (1 if circles[0][1] >= img_size_y/2 else -1)
-                    second_cordinate_x = math.tan(abs(img_size_x-circles[1][0])/second_distance) * second_distance * (1 if circles[1][0] >= img_size_x/2 else -1) 
-                    second_cordinate_y = math.tan(abs(img_size_y-circles[1][1])/second_distance) * second_distance * (1 if circles[1][1] >= img_size_y/2 else -1)
+                    first_cordinate_x = abs(img_size_x/2 - circles[0][0]) * first_distance *(1 if circles[0][0] >= img_size_x/2 else -1) / x_d_value
+                    first_cordinate_y = abs(img_size_y/2 - circles[0][1]) * first_distance * (1 if circles[0][1] >= img_size_y/2 else -1)/ y_d_value
+                    second_cordinate_x = abs(img_size_x/2 - circles[1][0]) * first_distance *(1 if circles[1][0] >= img_size_x/2 else -1) / x_d_value
+                    second_cordinate_y = abs(img_size_y/2 - circles[1][1]) * first_distance * (1 if circles[1][1] >= img_size_y/2 else -1)/ y_d_value
                 
                     cv2.putText(color_img, f'{first_distance:.4f} m, {circles[0][0]} by {circles[0][1]} logical : {first_cordinate_x:.4f} {first_cordinate_y:.4f}', (30,60), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
                     cv2.putText(color_img, f'{second_distance:.4f} m {circles[1][0]} by {circles[1][1]} logical : {second_cordinate_x:.4f} {second_cordinate_y:.4f}', (30,90), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
