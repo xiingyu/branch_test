@@ -44,12 +44,10 @@ def pre_treatment_img(origin_img) :
     ###hough
     lines = cv2.HoughLinesP(canny_img, 1, np.pi/180, 25, None, 40, 5)
     # print(len(lines))
-    if lines is not None :
-        print(lines.shape)
-        
+    if lines is not None :        
         for line in lines :
             x1, y1, x2, y2 = line[0]
-            cv2.line(origin_img, (x1 + int(X*0.1),y1 + int(Y/2 + Y*0.1)), (x2 + int(X*0.1),y2 + int(Y/2 + Y*0.1)), (0,255,0), 1)
+            cv2.line(origin_img, (x1 + int(X*0.1),y1 + int(Y/2 + Y*0.1)), (x2 + int(X*0.1),y2 + int(Y/2 + Y*0.1)), (0,255,0), 3)
     
     
     # result0 = np.hstack((gray, thresh, canny_img))

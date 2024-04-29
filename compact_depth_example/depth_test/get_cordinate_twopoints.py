@@ -106,6 +106,7 @@ try:
                 
                     cv2.putText(color_img, f'{first_distance:.4f} m, {circles[0][0]} by {circles[0][1]} logical : {first_cordinate_x:.4f} {first_cordinate_y:.4f}', (30,60), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
                     cv2.putText(color_img, f'{second_distance:.4f} m {circles[1][0]} by {circles[1][1]} logical : {second_cordinate_x:.4f} {second_cordinate_y:.4f}', (30,90), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
+                    cv2.putText(color_img, f'length of object : {math.sqrt((first_cordinate_x - second_cordinate_x)**2 + (first_cordinate_y - second_cordinate_y)**2 + (first_distance - second_distance)**2 ):.4f} m',(30,120), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
                     
             elif len(circles) == 1 :
                 for circle in circles:
