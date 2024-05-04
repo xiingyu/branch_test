@@ -8,7 +8,7 @@ import math
 img_size_x = 1280
 img_size_y = 720
 x_d_value = ( img_size_x / 2 ) / math.tan(34.5/180 * np.pi)
-y_d_value = ( img_size_y / 2 ) / math.tan(21/180 * np.pi)
+y_d_value = ( img_size_y / 2 ) / math.tan(21 /180 * np.pi)
 
 pipeline = rs.pipeline()
 config = rs.config()
@@ -86,6 +86,8 @@ try:
         during_time = end_time - start_time
         # print(during_time, f'{1/during_time} frames')
         # print(depth_image.shape) ### 480 by 640
+        
+        print(depth_image.shape)
         
         
         center_distance = depth_image[int(img_size_y/2)][int(img_size_x/2)] * depth_scale        

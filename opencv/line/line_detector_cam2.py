@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import math
 
-def pre_treatment_img(origin_img) :
+def pre_treatment_img(origin_img) :   
+    
     gray = cv2.cvtColor(origin_img, cv2.COLOR_BGR2GRAY)
     gray = cv2.GaussianBlur(gray, (0,0),1)
     
@@ -47,7 +48,7 @@ def pre_treatment_img(origin_img) :
     if lines is not None :        
         for line in lines :
             x1, y1, x2, y2 = line[0]
-            cv2.line(origin_img, (x1 + int(X*0.1),y1 + int(Y/2 + Y*0.1)), (x2 + int(X*0.1),y2 + int(Y/2 + Y*0.1)), (0,255,0), 3)
+            cv2.line(origin_img, (x1 + int(X*0.1),y1 + int(Y/2 + Y*0.2)), (x2 + int(X*0.1),y2 + int(Y/2 + Y*0.1)), (0,255,0), 3)
     
     
     # result0 = np.hstack((gray, thresh, canny_img))
@@ -63,7 +64,7 @@ def pre_treatment_img(origin_img) :
 
 
 def main() :
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(8)
     
     while True :
         ret, img = cap.read()

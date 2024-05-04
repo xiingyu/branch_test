@@ -5,7 +5,7 @@ import time
 # cam4 origin frame
 
 def main() :
-    cap = cv2.VideoCapture(2)   
+    cap = cv2.VideoCapture(8)   
     print("passed cap")
 
     while True :
