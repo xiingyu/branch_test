@@ -62,7 +62,6 @@ def pre_treatment_img(origin_img) :
     
     
     _, thresh = cv2. threshold(sliced_img, thresh_value, 255, cv2.THRESH_BINARY)
-    print(thresh_value)
     # athresh = cv2.adaptiveThreshold(gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
     # result = np.hstack((gray,thresh, athresh))
     
@@ -73,8 +72,8 @@ def pre_treatment_img(origin_img) :
     ###hough
     lines = cv2.HoughLinesP(canny_img, 1, np.pi/360, 50, None, 50, 5)
     # lines = cv2.HoughLines(canny_img, 1, np.pi/180, 25)
-    # print(len(lines))
     if lines is not None :    
+        print(len(lines))
         for line in lines :
             x1, y1, x2, y2 = line[0]
             cv2.line(origin_img, (x1 + int(X*0.1),y1 + int(Y*0.7)), (x2 + int(X*0.1),y2 + int(Y*0.7)), (0,255,0), 3)
