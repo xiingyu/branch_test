@@ -1,12 +1,18 @@
-import numpy as np
 import cv2
+import numpy as np
+import pyrealsense2 as rs
+import math
+
 import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
-import glob
-# %matplotlib inline
 
+img_size_x = 1280
+img_size_y = 720   
+thresh_value = 120
+thresh_max = 160
+thresh_min = 50
+thresh_weight = 1
 
-
+#########################   TOOL BOX  ##########################
 
 def abs_sobel_thresh(image, orient='x', sobel_kernel=3, thresh=(0, 255)):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -37,9 +43,9 @@ def dir_threshold(image, sobel_kernel=3, thresh=(0, np.pi/2)):
     abs_sobely = np.absolute(sobely)
     grad_dir = np.arctan2(abs_sobely, abs_sobelx)
     dir_binary = np.zeros_like(grad_dir)
-    dir_binary[(grad_dir >= thresh[0]) & (grad_dir <= thresh[1])] = 1
+    
+#########################   ########  ##########################
 
-    return dir_binary
 
 def apply_thresholds(image, ksize=3):
     gradx = abs_sobel_thresh(image, orient='x', sobel_kernel=ksize, thresh=(20, 100))
@@ -47,11 +53,10 @@ def apply_thresholds(image, ksize=3):
     mag_binary = mag_thresh(image, sobel_kernel=ksize, mag_thresh=(30, 100))
     dir_binary = dir_threshold(image, sobel_kernel=ksize, thresh=(0.7, 1.3))
 
-    combined = np.zeros_like(dir_binary)
+    combined = np.zeros_like(gradx)
     combined[((gradx == 1) & (grady == 1)) | ((mag_binary == 1) & (dir_binary == 1))] = 1
     
     return combined
-
 
 
 def apply_color_threshold(image):
@@ -64,67 +69,39 @@ def apply_color_threshold(image):
 
     return s_binary
     
-    
 
 def combine_threshold(s_binary, combined):
     combined_binary = np.zeros_like(combined)
     combined_binary[(s_binary == 1) | (combined == 1)] = 1
 
     return combined_binary
-
-
+    
 
 def warp(img):
     img_size = (img.shape[1], img.shape[0])
     
-    src = np.float32(
-        [[685, 450], 
-          [1090, 710], 
-          [220, 710], 
-          [595, 450]])
-    
-    dst = np.float32(
-        [[900, 0], 
-          [900, 710], 
-          [250, 710], 
-          [250, 0]])
+    src = np.float32([[int(img_size_x * 0.2), int(img_size_y * 0.7)],   ##  1 2 
+                    [int(img_size_x * 0.8), int(img_size_y * 0.7)],     ## 4   3
+                    [int(img_size_x * 0.9), int(img_size_y * 0.9)],     ## (x, y)
+                    [int(img_size_x * 0.1), int(img_size_y * 0.9)]
+                    ])
+    dst = np.float32([[0, 0],
+                    [img_size_x, 0],
+                    [img_size_x, img_size_y],
+                    [0, img_size_y]])
     
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
-    
     binary_warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
    
     return binary_warped, Minv
 
 
-def compare_plotted_images(image1, image2, image1_exp="Image 1", image2_exp="Image 2"):
-    f, (ax1, ax2) = plt.subplots(1, 2, figsize=(24, 9))
-    f.tight_layout()
-    ax1.imshow(image1)
-    ax1.plot([685, 1090], [450, 710], color='r', linewidth="5")
-    ax1.plot([1090, 220], [710, 710], color='r', linewidth="5")
-    ax1.plot([220, 595], [710, 450], color='r', linewidth="5")
-    ax1.plot([595, 685], [450, 450], color='r', linewidth="5")
-    ax1.set_title(image1_exp, fontsize=50)
-    ax2.imshow(image2)
-    ax2.plot([900, 900], [0, 710], color='r', linewidth="5")
-    ax2.plot([900, 250], [710, 710], color='r', linewidth="5")
-    ax2.plot([250, 250], [710, 0], color='r', linewidth="5")
-    ax2.plot([250, 900], [0, 0], color='r', linewidth="5")
-    ax2.set_title(image2_exp, fontsize=50)
-    plt.subplots_adjust(left=0., right=1, top=0.9, bottom=0.)
-
-    
-
-
 def get_histogram(binary_warped):
     histogram = np.sum(binary_warped[binary_warped.shape[0]//2:,:], axis=0)
-
     return histogram
-    
-    
 
-    
+
 def slide_window(binary_warped, histogram):
     out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
     midpoint = np.int(histogram.shape[0]/2)
@@ -192,7 +169,6 @@ def slide_window(binary_warped, histogram):
     return ploty, left_fit, right_fit
 
 
-
 def skip_sliding_window(binary_warped, left_fit, right_fit):
     nonzero = binary_warped.nonzero()
     nonzeroy = np.array(nonzero[0])
@@ -256,7 +232,6 @@ def skip_sliding_window(binary_warped, left_fit, right_fit):
 
 
 
-
 def measure_curvature(ploty, lines_info):
     ym_per_pix = 30/720 
     xm_per_pix = 3.7/700 
@@ -304,45 +279,48 @@ def draw_lane_lines(original_image, warped_image, Minv, draw_info):
 
 
 
-
-
 def main() :
-    cap = cv2.VideoCapture(0)
+    
+    pipeline = rs.pipeline()
+    config = rs.config()
+
+    config.enable_stream(rs.stream.depth,img_size_x,img_size_y, rs.format.z16, 30)
+    config.enable_stream(rs.stream.color,img_size_x,img_size_y, rs.format.bgr8, 30)
+    
+    profile = pipeline.start(config)    
     
     while True :
-        ret, real_time = cap.read()
         
-        if not ret :
-            print("Camera Connection fail")
-        else :
-            image = cv2.resize(real_time, dsize=(1200, 720), interpolation=cv2.INTER_CUBIC) #resize
-            
-            combined = apply_thresholds(image) #threshold
-            s_binary = apply_color_threshold(image)
-            combined_binary = combine_threshold(s_binary, combined)
-            warped, Minv = warp(image)
-            binary_warped, Minv = warp(combined_binary)
-            
-            histogram = get_histogram(binary_warped)
-            plt.plot(histogram)
-            
-            ploty, left_fit, right_fit = slide_window(binary_warped, histogram)
-            
-            draw_info = skip_sliding_window(binary_warped, left_fit, right_fit)
-            
-            left_curverad, right_curverad = measure_curvature(ploty, draw_info)
-            
-            result = draw_lane_lines(image, binary_warped, Minv, draw_info)
-            
-            cv2.imshow('result images', result)
-            
-            key = cv2.waitKey(1)
-            if key == ord('q') :
-                break
+        frames = pipeline.wait_for_frames()
+        color_frame = frames.get_color_frame()
+        image = np.asanyarray(color_frame.get_data())
         
-    cv2.destroyAllWindows()
-    cap.release()
+        combined = apply_thresholds(image) #threshold
+        s_binary = apply_color_threshold(image)
+        combined_binary = combine_threshold(s_binary, combined)
+        warped, Minv = warp(image)
+        binary_warped, Minv = warp(combined_binary)
+        
+        ###
+        
+        histogram = get_histogram(binary_warped)
+        plt.plot(histogram)
+        
+        ploty, left_fit, right_fit = slide_window(binary_warped, histogram)
+        
+        draw_info = skip_sliding_window(binary_warped, left_fit, right_fit)
+        
+        left_curverad, right_curverad = measure_curvature(ploty, draw_info)
+        
+        result = draw_lane_lines(image, binary_warped, Minv, draw_info)
+        
+        cv2.imshow('result images', result)
     
+        
+        key = cv2.waitKey(1)
+        if key == ord('q') :
+            break
+    cv2.destroyAllWindows()
 
 if __name__ == "__main__" :
     main()
