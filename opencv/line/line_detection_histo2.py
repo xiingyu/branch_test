@@ -1,7 +1,6 @@
 import cv2
 import numpy as np
 import pyrealsense2 as rs
-import math
 
 import matplotlib.pyplot as plt
 
@@ -106,11 +105,11 @@ def warp(img):
 
 def get_histogram(binary_warped):
     histogram = np.sum(binary_warped[int(binary_warped.shape[0] / 2):, :], axis=0 )
-    plt.plot(histogram)
-    # plt.imshow(output)
-    # plt.show()
-    plt.pause(0.1)
-    ax.clear()
+    # plt.plot(histogram)
+    # # plt.imshow(output)
+    # # plt.show()
+    # plt.pause(0.1)
+    # ax.clear()
     return histogram
 
 
@@ -167,87 +166,47 @@ def slide_window(binary_warped, histogram):
     lefty = nonzeroy[left_lane_inds] 
     rightx = nonzerox[right_lane_inds]
     righty = nonzeroy[right_lane_inds] 
-
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
+    
+    try:
+        left_fit = np.polyfit(lefty, leftx, 2)
+        right_fit = np.polyfit(righty, rightx, 2)
+    except TypeError as e:
+        print("TypeError:", e)
+        pass
 
     ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+    
+    ##### yellow line #####
     left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
     right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-
+    #######################
+    
+    ##### red and blue line #####
     out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
     out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
+    #############################
     
-    # plt.imshow(out_img)
-    # plt.plot(left_fitx, ploty, color='yellow')
-    # plt.plot(right_fitx, ploty, color='yellow')
-    # plt.xlim(0, 1280)
-    # plt.ylim(720, 0)
+    plt.imshow(out_img)
+    plt.plot(left_fitx, ploty, color='yellow')
+    plt.plot(right_fitx, ploty, color='yellow')
+    plt.xlim(0, img_size_x)
+    plt.ylim(img_size_y, 0)
+    # plt.plot(histogram)
+    # # plt.imshow(output)
+    plt.show()
+    plt.pause(0.1)
+    ax.clear()
     
-    return ploty, left_fit, right_fit
-
-
-def skip_sliding_window(binary_warped, left_fit, right_fit):
-    nonzero = binary_warped.nonzero()
-    nonzeroy = np.array(nonzero[0])
-    nonzerox = np.array(nonzero[1])
-    margin = 100
-    left_lane_inds = ((nonzerox > (left_fit[0]*(nonzeroy**2) + left_fit[1]*nonzeroy + 
-    left_fit[2] - margin)) & (nonzerox < (left_fit[0]*(nonzeroy**2) + 
-    left_fit[1]*nonzeroy + left_fit[2] + margin))) 
-
-    right_lane_inds = ((nonzerox > (right_fit[0]*(nonzeroy**2) + right_fit[1]*nonzeroy + 
-    right_fit[2] - margin)) & (nonzerox < (right_fit[0]*(nonzeroy**2) + 
-    right_fit[1]*nonzeroy + right_fit[2] + margin)))  
-
-    leftx = nonzerox[left_lane_inds]
-    lefty = nonzeroy[left_lane_inds] 
-    rightx = nonzerox[right_lane_inds]
-    righty = nonzeroy[right_lane_inds]
-    left_fit = np.polyfit(lefty, leftx, 2)
-    right_fit = np.polyfit(righty, rightx, 2)
-    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
-    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
-    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
-  
     
-    ################################ 
-    ## Visualization
-    ################################ 
     
-    out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
-    window_img = np.zeros_like(out_img)
-    out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
-    out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
-
-    left_line_window1 = np.array([np.transpose(np.vstack([left_fitx-margin, ploty]))])
-    left_line_window2 = np.array([np.flipud(np.transpose(np.vstack([left_fitx+margin, 
-                                  ploty])))])
-    left_line_pts = np.hstack((left_line_window1, left_line_window2))
-    right_line_window1 = np.array([np.transpose(np.vstack([right_fitx-margin, ploty]))])
-    right_line_window2 = np.array([np.flipud(np.transpose(np.vstack([right_fitx+margin, 
-                                  ploty])))])
-    right_line_pts = np.hstack((right_line_window1, right_line_window2))
-
-    cv2.fillPoly(window_img, np.int_([left_line_pts]), (0,255, 0))
-    cv2.fillPoly(window_img, np.int_([right_line_pts]), (0,255, 0))
-    result = cv2.addWeighted(out_img, 1, window_img, 0.3, 0)
+    info = {}
+    info['leftx'] = leftx
+    info['rightx'] = rightx
+    info['left_fitx'] = left_fitx
+    info['right_fitx'] = right_fitx
+    info['ploty'] = ploty
     
-    # plt.imshow(result)
-    # plt.plot(left_fitx, ploty, color='yellow')
-    # plt.plot(right_fitx, ploty, color='yellow')
-    # plt.xlim(0, 1280)
-    # plt.ylim(720, 0)
-    
-    ret = {}
-    ret['leftx'] = leftx
-    ret['rightx'] = rightx
-    ret['left_fitx'] = left_fitx
-    ret['right_fitx'] = right_fitx
-    ret['ploty'] = ploty
-    
-    return ret
-
+    return ploty, left_fit, right_fit, info
 
 
 def measure_curvature(ploty, lines_info):
@@ -268,33 +227,6 @@ def measure_curvature(ploty, lines_info):
     print(left_curverad, 'm', right_curverad, 'm')
     
     return left_curverad, right_curverad
-    
-
-
-
-def draw_lane_lines(original_image, warped_image, Minv, draw_info):
-    leftx = draw_info['leftx']
-    rightx = draw_info['rightx']
-    left_fitx = draw_info['left_fitx']
-    right_fitx = draw_info['right_fitx']
-    ploty = draw_info['ploty']
-    
-    warp_zero = np.zeros_like(warped_image).astype(np.uint8)
-    color_warp = np.dstack((warp_zero, warp_zero, warp_zero))
-
-    pts_left = np.array([np.transpose(np.vstack([left_fitx, ploty]))])
-    pts_right = np.array([np.flipud(np.transpose(np.vstack([right_fitx, ploty])))])
-    pts = np.hstack((pts_left, pts_right))
-    
-    cv2.fillPoly(color_warp, np.int_([pts]), (0,255, 0))
-
-    newwarp = cv2.warpPerspective(color_warp, Minv, (original_image.shape[1], original_image.shape[0])) 
-    result = cv2.addWeighted(original_image, 1, newwarp, 0.3, 0)
-    
-    return result
-
-
-
 
 
 def main() :
@@ -316,21 +248,15 @@ def main() :
         combined = apply_thresholds(image) #threshold
         s_binary = apply_color_threshold(image)
         combined_binary = combine_threshold(s_binary, combined)
-        warped, Minv = warp(image)
         binary_warped, Minv = warp(combined_binary)
         
         ###
         
-        histogram = get_histogram(binary_warped)
-        # plt.plot(histogram)
+        histogram = get_histogram(binary_warped)        
+        ploty, left_fit, right_fit, infos = slide_window(binary_warped, histogram)        
+        left_curverad, right_curverad = measure_curvature(ploty, infos)
         
-        # ploty, left_fit, right_fit = slide_window(binary_warped, histogram)
-        slide_window(binary_warped, histogram)
-        # draw_info = skip_sliding_window(binary_warped, left_fit, right_fit)
-        
-        # left_curverad, right_curverad = measure_curvature(ploty, draw_info)
-        
-        # result = draw_lane_lines(image, binary_warped, Minv, draw_info)
+        print(f'left : {left_curverad} right : {right_curverad}')
         
         
         cv2.polylines(image, [np.array([[int(img_size_x * 0.2), int(img_size_y * 0.7)],   ##  1 2 

@@ -169,7 +169,7 @@ def perspective_transf(img, combine) :
     
     output = np.dstack((warp_img, warp_img, warp_img)) * 255
     
-    
+    cv2.imshow("imgimgimg", warp_img)
     
     
 
@@ -224,7 +224,7 @@ def main() :
         # gradient_magnitude, gradient_direction, grad_combine = gradient_func(gray_img, sobel_x, sobel_y)
         
         h_img, l_img, s_img, hls_combine = hls_transf(color_img)
-        warp_img, (start_leftX, start_rightX) = perspective_transf(color_img, combined_binary)
+        warp_img, (start_leftX, start_rightX) = perspective_transf(color_img, color_img)
         
         
         cv2.polylines(color_img, [np.array([[int(img_size_x * 0.2), int(img_size_y * 0.7)],   ##  1 2 

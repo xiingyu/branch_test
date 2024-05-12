@@ -22,10 +22,6 @@ def pre_treatment_img(origin_img) :
     hsv_mask = cv2.inRange(hsv_color, hsv_lower, hsv_upper)
     
     
-    # erosion0 = cv2.erode(hsv_mask, (3,3), iterations=5)
-    # dilation0 = cv2.dilate(erosion0, (5,5), iterations=5)
-    # morphologed_mask = cv2.erode(dilation0, (3,3), iterations=2)
-    
     hsv_filterd = cv2.bitwise_and(hsv_color, hsv_color, mask=hsv_mask)
     color_filterd = cv2.cvtColor(hsv_filterd, cv2.COLOR_HSV2BGR)
     cv2.imshow("filterd",color_filterd)
