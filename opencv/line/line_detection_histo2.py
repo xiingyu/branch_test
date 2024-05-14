@@ -96,11 +96,11 @@ def warp(img):
                     [0, img_size_y]])
     
     M = cv2.getPerspectiveTransform(src, dst)
-    Minv = cv2.getPerspectiveTransform(dst, src)
+    # Minv = cv2.getPerspectiveTransform(dst, src)
     binary_warped = cv2.warpPerspective(img, M, img_size, flags=cv2.INTER_LINEAR)
     
    
-    return binary_warped, Minv
+    return binary_warped
 
 
 def get_histogram(binary_warped):
@@ -115,6 +115,10 @@ def get_histogram(binary_warped):
 
 def slide_window(binary_warped, histogram):
     global l_top, r_top
+    
+    left_fitx = []
+    right_fitx = []
+    
     out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
     midpoint = int(histogram.shape[0]/2)
     leftx_base = np.argmax(histogram[:midpoint])
@@ -173,13 +177,23 @@ def slide_window(binary_warped, histogram):
     except TypeError as e:
         print("TypeError:", e)
         pass
-
-    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )
+    
+    
+    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )       # height
     
     ##### yellow line #####
     left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
     right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    out_img[np.uint32(ploty), np.uint32(left_fitx)] = [0,255,0]
+    out_img[np.uint32(ploty), np.uint32(right_fitx)] = [0,255,0]
+    
+    # print(np.uint32(ploty))
+    # print(np.uint32(left_fitx))
+    
+    # print(ploty)
+    # print(left_fitx)
     #######################
+
     
     ##### red and blue line #####
     out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
@@ -194,7 +208,7 @@ def slide_window(binary_warped, histogram):
     # plt.plot(histogram)
     # # plt.imshow(output)
     plt.show()
-    plt.pause(0.1)
+    # plt.pause(0.01)
     ax.clear()
     
     
@@ -206,7 +220,7 @@ def slide_window(binary_warped, histogram):
     info['right_fitx'] = right_fitx
     info['ploty'] = ploty
     
-    return ploty, left_fit, right_fit, info
+    return ploty, left_fitx, right_fitx, info
 
 
 def measure_curvature(ploty, lines_info):
@@ -224,7 +238,7 @@ def measure_curvature(ploty, lines_info):
     right_fit_cr = np.polyfit(ploty*ym_per_pix, rightx*xm_per_pix, 2)
     left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
     right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
-    print(left_curverad, 'm', right_curverad, 'm')
+    # print(left_curverad, 'm', right_curverad, 'm')
     
     return left_curverad, right_curverad
 
@@ -248,12 +262,13 @@ def main() :
         combined = apply_thresholds(image) #threshold
         s_binary = apply_color_threshold(image)
         combined_binary = combine_threshold(s_binary, combined)
-        binary_warped, Minv = warp(combined_binary)
+        warped_color = warp(image)
+        binary_warped = warp(combined_binary)
         
         ###
         
         histogram = get_histogram(binary_warped)        
-        ploty, left_fit, right_fit, infos = slide_window(binary_warped, histogram)        
+        ploty, left_fitx, right_fitx, infos = slide_window(binary_warped, histogram)        
         left_curverad, right_curverad = measure_curvature(ploty, infos)
         
         print(f'left : {left_curverad} right : {right_curverad}')
@@ -265,9 +280,17 @@ def main() :
                     [int(img_size_x * 0.1), int(img_size_y * 0.9)]
                     ])], True, (0,255,0), 2)
         
-        cv2.circle(image, (l_top,int(img_size_y * 0.9)),5, (255,0,0), -1, cv2.LINE_AA)
-        cv2.circle(image, (r_top,int(img_size_y * 0.9)),5, (255,0,0), -1, cv2.LINE_AA)
+        origin_left_x = np.uint32((0.1 * img_size_x) + (0.8 * img_size_x) * (left_fitx[-1] / img_size_x))
+        origin_right_x = np.uint32((0.1 * img_size_x) + (0.8 * img_size_x) * (right_fitx[-1] / img_size_x))
         
+        cv2.circle(image, (origin_left_x,int(img_size_y * 0.9)),5, (255,0,0), -1, cv2.LINE_AA)
+        cv2.circle(image, (origin_right_x,int(img_size_y * 0.9)),5, (255,0,0), -1, cv2.LINE_AA)
+        
+        
+        warped_color[np.uint32(ploty), np.uint32(left_fitx)] = [0,255,0]
+        warped_color[np.uint32(ploty), np.uint32(right_fitx)] = [0,255,0]
+            
+        # cv2.imshow("warped", warped_color)
         cv2.imshow("origin_img", image)
         cv2.imshow('result images', binary_warped)
     
