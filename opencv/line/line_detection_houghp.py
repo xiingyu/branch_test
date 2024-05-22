@@ -8,8 +8,7 @@ img_size_y = 720
 thresh_value = 120
 thresh_max = 160
 thresh_min = 50
-thresh_weight = 1
-
+thresh_weight = 1   
 
 def pre_treatment_img(origin_img) :
     global thresh_value, thresh_max, thresh_min, thresh_weight
@@ -88,9 +87,6 @@ def pre_treatment_img(origin_img) :
     # result0 = np.hstack((gray, thresh, canny_img))
     # result1 = origin_img
     
-    
-    
-        
     return thresh, origin_img
         
     

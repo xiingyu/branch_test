@@ -57,6 +57,7 @@ try:
         aligned_frames = align.process(frames)
         
         color_frame = frames.get_color_frame()
+        depth_frame = frames.get_depth_frame()
         color_img = np.asanyarray(color_frame.get_data())
 
         aligned_depth_frame = aligned_frames.get_depth_frame()
@@ -165,6 +166,20 @@ try:
                 
                 first_cartesian = (first_cordinate_x, first_distance, first_cordinate_y)
                 
+                ############################################################################################################
+                
+                # 특정 픽셀의 깊이 값을 가져옴
+                depth = aligned_depth_frame.get_distance(circles[0][0], circles[0][1])
+                print(f"Depth at pixel {circles[0]}: {depth} meters")
+
+                # 깊이 값을 3D 좌표로 변환
+                depth_intrinsics = aligned_depth_frame.profile.as_video_stream_profile().intrinsics
+                print(depth_intrinsics)
+                depth_point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [circles[0][0], circles[0][1]], depth)
+                print(f"3D coordinates at pixel {circles[0]}: {depth_point}")
+                ############################################################################################################
+
+                
                 cv2.putText(color_img, f'{first_cartesian[0]:.4f} {first_cartesian[1]:.4f} {first_cartesian[2]:.4f}', (30,60), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
                 cv2.putText(color_img, f'{first_cartesian_x:.4f} {first_distance:.4f} {first_cartesian_z:.4f}', (30,90), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)    
         
@@ -179,6 +194,7 @@ try:
         # Press esc or 'q' to close the image window
         if key & 0xFF == ord('q') or key == 27:
             cv2.destroyAllWindows()
+            pipeline.stop()
             break
 finally:
     pipeline.stop()
