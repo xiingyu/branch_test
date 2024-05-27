@@ -4,11 +4,24 @@ import cv2
 import time
 import math
 
-### parameter init
-img_size_x = 1280
-img_size_y = 720
-x_d_value = ( img_size_x / 2 ) / math.tan(34.5/180 * np.pi)
-y_d_value = ( img_size_y / 2 ) / math.tan(21 /180 * np.pi)
+################### const parameter init ####################
+img_size_x = 640
+img_size_y = 480
+
+HFOV = 69   #degree
+VFOV = 42
+DFOV = 77
+
+x_d_value = ( img_size_x / 2 ) / math.tan(HFOV/2/180 * np.pi)
+y_d_value = ( img_size_y / 2 ) / math.tan(VFOV/2/180 * np.pi)
+
+###########################################################
+################# setting parameter init ##################
+
+camera_height = 70 #mm
+
+###########################################################
+
 
 pipeline = rs.pipeline()
 config = rs.config()
@@ -178,6 +191,7 @@ try:
                 depth_point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [circles[0][0], circles[0][1]], depth)
                 print(f"3D coordinates at pixel {circles[0]}: {depth_point}")
                 ############################################################################################################
+                print(f'{circles[0][0]}, {circles[0][1]}')
 
                 
                 cv2.putText(color_img, f'{first_cartesian[0]:.4f} {first_cartesian[1]:.4f} {first_cartesian[2]:.4f}', (30,60), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)

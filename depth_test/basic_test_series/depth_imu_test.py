@@ -38,9 +38,9 @@ try:
 
         else:
             print("accelerometer: ", accel-Start_accel)
-            #print("gyro: ", gyro)
+            print("gyro: ", gyro)
 
-            time.sleep(1)
+            time.sleep(0.5)
 
 
 finally:
