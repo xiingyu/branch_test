@@ -5,8 +5,8 @@ import math
 
 
 ################### const parameter init ####################
-img_size_x = 640
-img_size_y = 480
+img_size_x = 1280
+img_size_y = 720
 
 thresh_value = 120
 thresh_max = 160
@@ -26,17 +26,12 @@ y_d_value = ( img_size_y / 2 ) / math.tan(VFOV/2/180 * np.pi)
 color_format = rs.format.bgr8
 depth_format = rs.format.z16
 
-
-
-#################  find good parameters ###################
-
-W_H_ratio = 0.75
-height_ratio = 2 # i used 1~4
+W_H_ratio = 0.65
 
 ###########################################################
 ################# setting parameter init ##################
 
-camera_height = 115 #mm
+camera_height = 120 #mm
 
 
 
@@ -164,8 +159,8 @@ def warp(img):
     
     src = np.float32([[0, 0],   ##  1 2 
                     [int(W_H), 0],     ## 4   3
-                    [int(W_H - (W_H-W_L)/2), int(img_size_y * (1-W_H_ratio))*height_ratio],
-                    [int((W_H-W_L)/2), int(img_size_y * (1-W_H_ratio))*height_ratio]     ## (x, y)
+                    [int(W_H - (W_H-W_L)/2), int(img_size_y * (1-W_H_ratio))*4],
+                    [int((W_H-W_L)/2), int(img_size_y * (1-W_H_ratio))*4]     ## (x, y)
                     ])
     dst = np.float32([[0, int(img_size_y * W_H_ratio)],
                     [img_size_x, int(img_size_y * W_H_ratio)],
@@ -174,7 +169,7 @@ def warp(img):
     # print(src)
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
-    binary_warped = cv2.warpPerspective(img, Minv, (int(W_H), int(img_size_y * (1-W_H_ratio)*height_ratio)), flags=cv2.INTER_LINEAR)
+    binary_warped = cv2.warpPerspective(img, Minv, (int(W_H), int(img_size_y * (1-W_H_ratio)*4)), flags=cv2.INTER_LINEAR)
     
    
     return binary_warped
