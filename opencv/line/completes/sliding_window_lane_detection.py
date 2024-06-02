@@ -4,8 +4,8 @@ import pyrealsense2 as rs
 
 import matplotlib.pyplot as plt
 
-img_size_x = 1280
-img_size_y = 720   
+img_size_x = 640
+img_size_y = 480   
 thresh_value = 120
 thresh_max = 160
 thresh_min = 50
@@ -121,6 +121,8 @@ def slide_window(binary_warped, histogram):
     
     out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
     midpoint = int(histogram.shape[0]/2)
+    
+    ###argmax -> 가장 높은value를 가진 자리값 반환
     leftx_base = np.argmax(histogram[:midpoint])
     rightx_base = np.argmax(histogram[midpoint:]) + midpoint
     
