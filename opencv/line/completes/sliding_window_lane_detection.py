@@ -4,8 +4,8 @@ import pyrealsense2 as rs
 
 import matplotlib.pyplot as plt
 
-img_size_x = 640
-img_size_y = 480   
+img_size_x = 1280
+img_size_y = 720  
 thresh_value = 120
 thresh_max = 160
 thresh_min = 50
@@ -180,7 +180,7 @@ def slide_window(binary_warped, histogram):
         print("TypeError:", e)
         pass
     
-    
+    ## 채우기 같은거
     ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )       # height
     
     ##### yellow line #####
@@ -207,8 +207,8 @@ def slide_window(binary_warped, histogram):
     plt.plot(right_fitx, ploty, color='yellow')
     plt.xlim(0, img_size_x)
     plt.ylim(img_size_y, 0)
-    # plt.plot(histogram)
-    # # plt.imshow(output)
+    plt.plot(histogram)
+    # plt.imshow(output)
     plt.show()
     # plt.pause(0.01)
     ax.clear()
