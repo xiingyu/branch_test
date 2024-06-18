@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 
 
 ################### const parameter init ####################
-img_size_x = 1280
-img_size_y = 720
+img_size_x = 1920
+img_size_y = 1080
 
 thresh_value = 120
 thresh_max = 160
@@ -31,8 +31,9 @@ depth_format = rs.format.z16
 
 #################  find good parameters ###################
 
-W_H_ratio = 0.7
-height_ratio = 2 # i used 1~4 #변환시 y가 너무 짧아 늘이는 비율.
+W_H_ratio = 0.58
+warped_remain_ratio = 0.3
+height_ratio = 2 # i used 1~4
 
 ###########################################################
 ################# setting parameter init ##################
@@ -175,11 +176,30 @@ def warp(img):
     # print(src)
     M = cv2.getPerspectiveTransform(src, dst)
     Minv = cv2.getPerspectiveTransform(dst, src)
-    binary_warped = cv2.warpPerspective(img, Minv, (int(W_H), int(img_size_y * (1-W_H_ratio)*height_ratio)), flags=cv2.INTER_LINEAR)
+    binary_warped = cv2.warpPerspective(img, Minv, (int(W_H), int(img_size_y * (1-W_H_ratio)*height_ratio*warped_remain_ratio)), flags=cv2.INTER_LINEAR)####이게 필요해 !
     
    
     return binary_warped
 
+def warp_inv(img):
+    
+    
+    src = np.float32([[0, 0],   ##  1 2 
+                    [int(W_H), 0],     ## 4   3
+                    [int(W_H - (W_H-W_L)/2), int(img_size_y * (1-W_H_ratio))*height_ratio],
+                    [int((W_H-W_L)/2), int(img_size_y * (1-W_H_ratio))*height_ratio]     ## (x, y)
+                    ])
+    dst = np.float32([[0, int(img_size_y * W_H_ratio)],
+                    [img_size_x, int(img_size_y * W_H_ratio)],
+                    [img_size_x, img_size_y],
+                    [0, img_size_y]])
+    # print(src)
+    M = cv2.getPerspectiveTransform(src, dst)
+    Minv = cv2.getPerspectiveTransform(dst, src)
+    binary_warped = cv2.warpPerspective(img, M, (int(W_H), int(img_size_y * (1-W_H_ratio)*height_ratio)), flags=cv2.INTER_LINEAR)####이게 필요해 !
+    
+   
+    return binary_warped
 
 ################################# pre processing
 ################################# color detection
@@ -259,66 +279,220 @@ def combine_threshold(s_binary, combined):
 
     return combined_binary
 
-################################### hough
 
-def find_lines(image, warped_color) :
-    # print(image.shape[1]/2)
-    dilated = cv2.dilate(image, (5,5), iterations=2)
-    l_image = dilated[:,:int(dilated.shape[1]/2)]
-    r_image = dilated[:,int(dilated.shape[1]/2):]
-    
-    cv2.imshow("l", l_image)
-    cv2.imshow("r", r_image)
-    
-    l_lines = cv2.HoughLinesP(l_image, 20, np.pi/180. , 160, minLineLength=150, maxLineGap=20)
-    r_lines = cv2.HoughLinesP(r_image, 20, np.pi/180. , 160, minLineLength=150, maxLineGap=20)
-    
-    if l_lines is not None :
-        for i in range(l_lines.shape[0]) :
-            lpt1 = (l_lines[i][0][0], l_lines[i][0][1]) # 시작점 좌표 x,y
-            lpt2 = (l_lines[i][0][2], l_lines[i][0][3]) # 끝점 좌표, 가운데는 무조건 0
-            cv2.line(warped_color, lpt1, lpt2, (0, 0, 255), 2, cv2.LINE_AA)
-    
-    if r_lines is not None :
-        for i in range(r_lines.shape[0]) :
-            rpt1 = (r_lines[i][0][0]+int(dilated.shape[1]/2), r_lines[i][0][1]) # 시작점 좌표 x,y
-            rpt2 = (r_lines[i][0][2]+int(dilated.shape[1]/2), r_lines[i][0][3]) # 끝점 좌표, 가운데는 무조건 0
-            cv2.line(warped_color, rpt1, rpt2, (0, 0, 255), 2, cv2.LINE_AA)
-            
-    cv2.imshow("hough", warped_color)
-
-    
-    return 0
-
-
-#################################### histogram
-
+################################### histogram
 plt.ion()
 fig, ax = plt.subplots()
 
 def get_histogram(image):
     # histogram = np.sum(image, axis=0).sum(axis=1)
     histogram = np.sum(image, axis=0)
+    # ax.clear()
+    # ax.plot(histogram)
+    # ax.set_title("Vertical Sum Histogram")
+    # plt.draw()
+    # plt.pause(0.001)
+    return histogram
+
+
+def color_filter(color_img) :
+    hsv = cv2.cvtColor(color_img, cv2.COLOR_BGR2HSV)
+    
+    lower = (15,20,20)
+    upper = (30,255,255)
+    
+    
+
+################################### hough
+
+def find_lines(binary_warped) :
+    # print(image.shape[1]/2)
+    # dilated = cv2.dilate(binary_warped, (5,5), iterations=2)
+    # l_image = dilated[:,:int(dilated.shape[1]/2)]
+    # r_image = dilated[:,int(dilated.shape[1]/2):]
+    
+    # cv2.imshow("l", l_image)
+    # cv2.imshow("r", r_image)
+    
+    # l_histo = get_histogram(l_image)
+    # r_histo = get_histogram(r_image)
+    
+    ########## 아래는 hough라는 망측한 아이를 사용하는 코드
+    # l_lines = cv2.HoughLinesP(l_image, 20, np.pi/180. , 160, minLineLength=150, maxLineGap=20)
+    # r_lines = cv2.HoughLinesP(r_image, 20, np.pi/180. , 160, minLineLength=150, maxLineGap=20)
+    
+    # if l_lines is not None :
+    #     for i in range(l_lines.shape[0]) :
+    #         lpt1 = (l_lines[i][0][0], l_lines[i][0][1]) # 시작점 좌표 x,y
+    #         lpt2 = (l_lines[i][0][2], l_lines[i][0][3]) # 끝점 좌표, 가운데는 무조건 0
+    #         cv2.line(warped_color, lpt1, lpt2, (0, 0, 255), 2, cv2.LINE_AA)
+    
+    # if r_lines is not None :
+    #     for i in range(r_lines.shape[0]) :
+    #         rpt1 = (r_lines[i][0][0]+int(dilated.shape[1]/2), r_lines[i][0][1]) # 시작점 좌표 x,y
+    #         rpt2 = (r_lines[i][0][2]+int(dilated.shape[1]/2), r_lines[i][0][3]) # 끝점 좌표, 가운데는 무조건 0
+    #         cv2.line(warped_color, rpt1, rpt2, (0, 0, 255), 2, cv2.LINE_AA)
+            
+    # cv2.imshow("hough", warped_color)
+    #############망측한 hough는 여기까지
+    
+    histo = get_histogram(binary_warped)
+    
+    out_img = np.dstack((binary_warped, binary_warped, binary_warped))*255
+    
+    midpoint = int(binary_warped.shape[1]/2)
+    leftx_base = np.argmax(histo[:midpoint])
+    rightx_base = np.argmax(histo[midpoint:]) + midpoint
+    
+    
+    
+    nwindows = 4
+    window_height = int(binary_warped.shape[0]/nwindows)
+    nonzero = binary_warped.nonzero()
+    nonzeroy = np.array(nonzero[0]) #row coordinate
+    nonzerox = np.array(nonzero[1]) #col coordinate
+    
+    
+    leftx_current = leftx_base
+    rightx_current = rightx_base
+    margin = int(img_size_x * 0.09)
+    minpix = 50
+    left_lane_inds = []
+    right_lane_inds = []
+
+    
+    for window in range(nwindows):
+        win_y_low = binary_warped.shape[0] - (window+1)*window_height   #from bottom to top
+        win_y_high = binary_warped.shape[0] - window*window_height      ##low is top. high is bottom
+        
+        win_xleft_low = leftx_current - margin
+        win_xleft_high = leftx_current + margin
+        win_xright_low = rightx_current - margin
+        win_xright_high = rightx_current + margin
+        
+        cv2.rectangle(out_img,(win_xleft_low,win_y_low),(win_xleft_high,win_y_high), (0,255,0), 2) 
+        cv2.rectangle(out_img,(win_xright_low,win_y_low),(win_xright_high,win_y_high), (0,255,0), 2) 
+        good_left_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & (nonzerox >= win_xleft_low) &  (nonzerox < win_xleft_high)).nonzero()[0]
+        good_right_inds = ((nonzeroy >= win_y_low) & (nonzeroy < win_y_high) & (nonzerox >= win_xright_low) &  (nonzerox < win_xright_high)).nonzero()[0]
+        ### good data is true/false. but, use nonzero, counting "Ture"
+                
+        left_lane_inds.append(good_left_inds)
+        right_lane_inds.append(good_right_inds)
+        if len(good_left_inds) > minpix:
+            leftx_current = int(np.mean(nonzerox[good_left_inds]))
+        if len(good_right_inds) > minpix:        
+            rightx_current = int(np.mean(nonzerox[good_right_inds]))
+
+    left_lane_inds = np.concatenate(left_lane_inds)
+    right_lane_inds = np.concatenate(right_lane_inds)
+
+    leftx = nonzerox[left_lane_inds]
+    lefty = nonzeroy[left_lane_inds] 
+    rightx = nonzerox[right_lane_inds]
+    righty = nonzeroy[right_lane_inds] 
+    
+    try:
+        left_fit = np.polyfit(lefty, leftx, 2)
+        right_fit = np.polyfit(righty, rightx, 2)
+    except TypeError as e:
+        print("TypeError:", e)
+        
+        info = {}
+        info['leftx'] = 0
+        info['rightx'] = 0
+        info['left_fitx'] = 0
+        info['right_fitx'] = 0
+        info['ploty'] = 0
+
+        return info
+    
+    ## 채우기 같은거
+    ploty = np.linspace(0, binary_warped.shape[0]-1, binary_warped.shape[0] )       # height
+    
+    ##### yellow line #####
+    left_fitx = left_fit[0]*ploty**2 + left_fit[1]*ploty + left_fit[2]
+    right_fitx = right_fit[0]*ploty**2 + right_fit[1]*ploty + right_fit[2]
+    out_img[np.uint32(ploty), np.uint32(left_fitx)] = [0,255,0]
+    out_img[np.uint32(ploty), np.uint32(right_fitx)] = [0,255,0]
+    
+    # print(np.uint32(ploty))
+    # print(np.uint32(left_fitx))
+    
+    # print(ploty)
+    # print(left_fitx)
+    #######################
+
+    
+    ##### red and blue line #####
+    out_img[nonzeroy[left_lane_inds], nonzerox[left_lane_inds]] = [255, 0, 0]
+    out_img[nonzeroy[right_lane_inds], nonzerox[right_lane_inds]] = [0, 0, 255]
+    #############################
+    
+    # plt.imshow(out_img)
+    # plt.plot(left_fitx, ploty, color='yellow')
+    # plt.plot(right_fitx, ploty, color='yellow')
+    # plt.xlim(0, img_size_x)
+    # plt.ylim(img_size_y, 0)
+    # plt.plot(histogram)
+    # plt.imshow(output)
+    # plt.show()
+    # plt.pause(0.01)
+    # ax.clear()
+    
+    
     ax.clear()
-    ax.plot(histogram)
+    
+    ax.plot(histo)
     ax.set_title("Vertical Sum Histogram")
     plt.draw()
     plt.pause(0.001)
-    return histogram
+    
+    
+    info = {}
+    info['leftx'] = leftx
+    info['rightx'] = rightx
+    info['left_fitx'] = left_fitx
+    info['right_fitx'] = right_fitx
+    info['ploty'] = ploty
+    
+    cv2.imshow("out_img",out_img)
+    
+    return info
 
+
+def measure_curvature(lines_info):
+    ym_per_pix = 1
+    xm_per_pix = 1 
+
+    leftx = lines_info['left_fitx']
+    rightx = lines_info['right_fitx']
+    ploty = lines_info['ploty']
+
+    leftx = leftx[::-1]  
+    rightx = rightx[::-1]  
+
+    y_eval = np.max(ploty)
+    left_fit_cr = np.polyfit(ploty*ym_per_pix, leftx*xm_per_pix, 2)
+    right_fit_cr = np.polyfit(ploty*ym_per_pix, rightx*xm_per_pix, 2)
+    left_curverad = ((1 + (2*left_fit_cr[0]*y_eval*ym_per_pix + left_fit_cr[1])**2)**1.5) / np.absolute(2*left_fit_cr[0])
+    right_curverad = ((1 + (2*right_fit_cr[0]*y_eval*ym_per_pix + right_fit_cr[1])**2)**1.5) / np.absolute(2*right_fit_cr[0])
+    # print(left_curverad, 'm', right_curverad, 'm')
+    
+    return left_curverad, right_curverad
 
 def main() :
     while True :
         
-        frames = pipeline.wait_for_frames()
-        color_frame = frames.get_color_frame()
-        color_img = np.asanyarray(color_frame.get_data())
+        # frames = pipeline.wait_for_frames()
+        # color_frame = frames.get_color_frame()
+        # color_img = np.asanyarray(color_frame.get_data())
+        
+        color_img = cv2.imread('./img15.png')
         
         split_img = color_img.copy()
         split_img[:int(img_size_y*W_H_ratio),:] = 0
         
         warped_color = warp(split_img)
-        cv2.imshow("wapred_img", warped_color)
         
         
         ###find l_lines from warped
@@ -327,32 +501,33 @@ def main() :
         combined_binary = combine_threshold(s_binary, combined)
         warped_split_img = warp(combined_binary)
         
-        cannied = cv2.Canny(warped_split_img, 300,400)
         cv2.imshow("combined_binary", warped_split_img)
-        cv2.imshow("cannied", cannied)
+        
+        # line_window = warped_split_img[:int(warped_split_img.shape[0]*warped_remain_ratio),:]
+        infos = find_lines(warped_split_img)   
+        left_curverad, right_curverad = measure_curvature(infos)
+        print(left_curverad, right_curverad)
 
-        # filterd = color_detection(combined_binary)
-        # cv2.imshow("filterd", filterd)
+        l_fitx = infos["left_fitx"]
+        r_fitx = infos["right_fitx"]
         
-        # test0, test1 = pre_treatment_img(half_img)
+        origin_l_x = int(l_fitx[-1])
+        origin_r_x = int(r_fitx[-1])
         
-        #####
+        print(origin_l_x)
+        print(origin_r_x)
+        cv2.circle(color_img, (int(origin_l_x/(l_fitx.shape[0]) * img_size_x), int(img_size_y * W_H_ratio + ((img_size_y - img_size_y * W_H_ratio) * warped_remain_ratio))), 5, (255,0,0), -1, cv2.LINE_AA)
+        cv2.circle(color_img, (int(origin_r_x/(r_fitx.shape[0]) * img_size_x), int(img_size_y * W_H_ratio + ((img_size_y - img_size_y * W_H_ratio) * warped_remain_ratio))), 5, (255,0,0), -1, cv2.LINE_AA)
+        # print(l_fitx[-1])
+        cv2.rectangle(color_img, (0, int(img_size_y * W_H_ratio)), (int(img_size_x), int(img_size_y * W_H_ratio)), (255,0,0), 2)
+        cv2.rectangle(color_img, (0, int(img_size_y * W_H_ratio)), (int(img_size_x), int(img_size_y * W_H_ratio + ((img_size_y - img_size_y * W_H_ratio) * warped_remain_ratio))), (255,0,0), 2)
         
-        find_lines(cannied, warped_color)
-        # get_histogram(warped_split_img)
-        
-        
-        cv2.rectangle(color_img, (0,int(img_size_y*W_H_ratio)),(img_size_x,int(img_size_y)),(255,0,0), 2)
-        # cv2.line(color_img, (0,int(img_size_y/2)),(img_size_x,int(img_size_y/2)),(255,0,0), 2)
-        
-        
-        cv2.imshow('Origin',color_img)
+        # cv2.imshow('line_window', line_window)
+        cv2.imshow('Origin', color_img)
         cv2.imshow('warp', warped_color)
-        # cv2.imshow('Test0', test0)
-        # cv2.imshow('Test1', test1)
         
-        key = cv2.waitKey(1)
-        if key == ord('q') :
+        key = cv2.waitKey(1000)
+        if key == ord('q'):
             break
     cv2.destroyAllWindows()
 

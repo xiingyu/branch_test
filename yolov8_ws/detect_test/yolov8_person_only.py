@@ -7,7 +7,7 @@ from ultralytics import YOLO
 
 def apply_yolo(image) :
     
-    result = model.predict(image, classes=[0., 67.], conf= 0.25)
+    result = model.predict(image, conf= 0.4)
     
     annotated_img = result[0].plot()
     
