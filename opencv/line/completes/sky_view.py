@@ -30,7 +30,7 @@ depth_format = rs.format.z16
 
 #################  find good parameters ###################
 
-W_H_ratio = 0.75
+W_H_ratio = 0.65
 height_ratio = 2 # i used 1~4
 
 ###########################################################

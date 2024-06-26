@@ -454,6 +454,7 @@ def find_lines(binary_warped) :
     info['left_fitx'] = left_fitx
     info['right_fitx'] = right_fitx
     info['ploty'] = ploty
+    info['total'] = binary_warped.shape[1]
     
     cv2.imshow("out_img",out_img)
     
