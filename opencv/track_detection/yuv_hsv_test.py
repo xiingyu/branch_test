@@ -4,27 +4,18 @@ import pyrealsense2 as rs
 
 import matplotlib.pyplot as plt
 
-
-img_size_x = 1280
-img_size_y = 720
 cam_num = 4
+
+def hsv_detection(img, upper=(), lower) :
+
+
+
 
 def main() :
     
-    # pipeline = rs.pipeline()
-    # config = rs.config()
-
-    # config.enable_stream(rs.stream.depth,img_size_x,img_size_y, rs.format.z16, 30)
-    # config.enable_stream(rs.stream.color,img_size_x,img_size_y, rs.format.bgr8, 30)
-    
-    # profile = pipeline.start(config)    
     cap = cv2.VideoCapture(cam_num)
     
     while True :
-        
-        # frames = pipeline.wait_for_frames()
-        # color_frame = frames.get_color_frame()
-        # image = np.asanyarray(color_frame.get_data())
         ret, image = cap.read()
         
         if not ret :
@@ -42,7 +33,6 @@ def main() :
             
             cv2.imshow("origin_img", image)
             cv2.imshow("yuv", yuv_image)
-            # cv2.imshow("bright", up_scale)
             cv2.imshow("Y", Y_img)
             cv2.imshow("U", U_img)
             cv2.imshow("V", V_img)
