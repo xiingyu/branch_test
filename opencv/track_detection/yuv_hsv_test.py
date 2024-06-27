@@ -4,11 +4,31 @@ import pyrealsense2 as rs
 
 import matplotlib.pyplot as plt
 
-cam_num = 4
+cam_num = 0
 
-def hsv_detection(img, upper=(), lower) :
+def hsv_detection(img, lower=(110,50,50), upper=(130,255,255)) :
+    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    
+    hsv_lower = np.array(lower)
+    hsv_upper = np.array(upper)
+    
+    hsv_mask = cv2.inRange(hsv_img, hsv_lower, hsv_upper)
+    
+    filterd = cv2.bitwise_and(hsv_img, hsv_img, mask=hsv_mask)
+    filterd_img = cv2.cvtColor(filterd, cv2.COLOR_HSV2BGR)
+    
+    return filterd_img
 
-
+def yuv_detection(img) :
+    yuv_img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    Y_img, U_img, V_img = cv2.split(yuv_img)
+    
+    ret,U_img_treated = cv2.threshold(U_img, 140, 255, cv2.THRESH_BINARY)
+    if ret :
+        filterd = cv2.bitwise_and(img, img, mask=U_img_treated)
+        cv2.imshow("UUUU", filterd)
+    
+    
 
 
 def main() :
@@ -22,20 +42,22 @@ def main() :
             print("fail")
             
         else :
-            yuv_image = cv2.cvtColor(image, cv2.COLOR_BGR2YUV)
-            print(f'shape : {yuv_image.shape}')
             
-            Y_img, U_img, V_img = cv2.split(yuv_image)
+            yuv_detection(image)
+            hsv = hsv_detection(image)
             
-            Y_img = np.clip(Y_img* 1.5, 0 ,255).astype(np.uint8)
-            up_scale = cv2.merge([Y_img,U_img,V_img])
+            cv2.imshow("hsv", hsv)
+            
+            
+            # Y_img = np.clip(Y_img* 1.5, 0 ,255).astype(np.uint8)
+            # up_scale = cv2.merge([Y_img,U_img,V_img])
             
             
             cv2.imshow("origin_img", image)
-            cv2.imshow("yuv", yuv_image)
-            cv2.imshow("Y", Y_img)
-            cv2.imshow("U", U_img)
-            cv2.imshow("V", V_img)
+            # cv2.imshow("yuv", yuv_image)
+            # cv2.imshow("Y", Y_img)
+            # cv2.imshow("U", U_img)
+            # cv2.imshow("V", V_img)
             
             
             key = cv2.waitKey(1)
