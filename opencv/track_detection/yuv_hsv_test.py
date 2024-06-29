@@ -4,10 +4,11 @@ import pyrealsense2 as rs
 
 import matplotlib.pyplot as plt
 
-cam_num = 0
+cam_num = 5
 
 def hsv_detection(img, lower=(110,50,50), upper=(130,255,255)) :
-    hsv_img = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    gaussian = cv2.GaussianBlur(img, (0, 0), 1)
+    hsv_img = cv2.cvtColor(gaussian, cv2.COLOR_BGR2HSV)
     
     hsv_lower = np.array(lower)
     hsv_upper = np.array(upper)
@@ -20,12 +21,17 @@ def hsv_detection(img, lower=(110,50,50), upper=(130,255,255)) :
     return filterd_img
 
 def yuv_detection(img) :
-    yuv_img = cv2.cvtColor(img, cv2.COLOR_BGR2YUV)
+    gaussian = cv2.GaussianBlur(img, (0, 0), 1)
+    yuv_img = cv2.cvtColor(gaussian, cv2.COLOR_BGR2YUV)
     Y_img, U_img, V_img = cv2.split(yuv_img)
     
+    rescale = np.clip(U_img - V_img, 0, 255).astype(np.uint8)
     ret,U_img_treated = cv2.threshold(U_img, 140, 255, cv2.THRESH_BINARY)
     if ret :
         filterd = cv2.bitwise_and(img, img, mask=U_img_treated)
+        # cv2.imshow("U_img", U_img)
+        # cv2.imshow("V_img", V_img)
+        cv2.imshow("rescale",rescale)
         cv2.imshow("UUUU", filterd)
     
     
