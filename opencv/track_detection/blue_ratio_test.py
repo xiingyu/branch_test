@@ -1,9 +1,10 @@
 import cv2
 import numpy as np
-import pyrealsense2 as rs
 
 import matplotlib.pyplot as plt
 
+plt.ion()
+fig, ax = plt.subplots()
 
 ###################################
 # ideas...
@@ -18,10 +19,11 @@ cam_num = 4
 U_detection_threshold = 140 ## 0~255
 img_size_x = 1280
 img_size_y = 720
+ROI_ratio = 0.2
 
 #################################
 
-def hsv_detection(img, lower=(100,20,20), upper=(130,255,255)) :
+def hsv_detection(img, lower=(110,50,50), upper=(130,255,255)) :
     gaussian = cv2.GaussianBlur(img, (0, 0), 1)
     hsv_img = cv2.cvtColor(gaussian, cv2.COLOR_BGR2HSV)
     
@@ -42,38 +44,40 @@ def yuv_detection(img) :
     
     # rescale = np.clip(U_img - V_img, 0, 255).astype(np.uint8)
     ret,U_img_treated = cv2.threshold(U_img, U_detection_threshold, 255, cv2.THRESH_BINARY)
+    histogram = get_histo(U_img_treated)
+    L_end, R_end = end_point_finder(U_img_treated,histogram)
     if ret :
         filterd = cv2.bitwise_and(img, img, mask=U_img_treated)
         cv2.imshow("UUUU", filterd)
         
         
-##무쓸모... 내 아이디어지만 병신임 그냥
-def yuv_hsv_collabo(img) :
-    gaussian = cv2.GaussianBlur(img, (3, 3), 1)
-    
-    hsv_img = cv2.cvtColor(gaussian, cv2.COLOR_BGR2HSV)
-    hsv_lower = np.array((100,20,20))
-    hsv_upper = np.array((130,255,255))
-    hsv_mask = cv2.inRange(hsv_img, hsv_lower, hsv_upper)
-    ret, hsv_mask = cv2.threshold(hsv_mask, U_detection_threshold, 255, cv2.THRESH_BINARY_INV)
-    hsv_mask = hsv_mask.astype(np.int16)
-    
-    yuv_img = cv2.cvtColor(gaussian, cv2.COLOR_BGR2YUV)
-    Y_img, U_img, V_img = cv2.split(yuv_img)
-    ret, U_img_treated = cv2.threshold(U_img, U_detection_threshold, 255, cv2.THRESH_BINARY)
-    U_img_treated = U_img_treated.astype(np.int16)
-    
-    rescale = np.clip(U_img_treated - hsv_mask, 0, 255).astype(np.uint8)
-    filterd = cv2.bitwise_and(img, img, mask=rescale)
-    cv2.imshow("improved filterd color", filterd)
-    
     
 def get_histo(image) :
-    return 0
+    histogram = np.sum(image, axis=0 )
+    plt.plot(histogram)
+    # plt.imshow(output)
+    plt.show()
+    plt.pause(0.1)
+    ax.clear()
+    return histogram
+
+def end_point_finder(binary_image,histogram) :
+    y,x = binary_image.shape
+    midpoint = int(x/2)
+    
+    L_histo = histogram[:midpoint]
+    R_histo = histogram[midpoint:]
+    
+    L_end = np.argmax(L_histo)
+    R_end = img_size_x - np.argmax(R_histo[::-1])
+    # print(L_end, R_end)
+    print(f'L-diff {midpoint - L_end}   / R-diff{R_end - midpoint}')
+    return L_end, R_end
     
 
 
 def main() :
+    global cam_num
     
     cap = cv2.VideoCapture(cam_num)
     
@@ -89,11 +93,17 @@ def main() :
         
         if not ret :
             print("fail")
+            break
             
         else :
+            ######## ROI ########
+            ROI = image[int(img_size_y * (1-ROI_ratio)):,:].copy()
+            cv2.rectangle(image,(0,int(img_size_y * (1-ROI_ratio))),(img_size_x, img_size_y),(255,0,0),2)
             
-            yuv_detection(image)
-            yuv_hsv_collabo(image)
+            
+            ########     ########
+            
+            yuv_detection(ROI)
             hsv = hsv_detection(image)
             
             cv2.imshow("hsv", hsv)

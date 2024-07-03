@@ -27,10 +27,10 @@ import numpy as np
 # cv2.imshow("result",result)
 # cv2.waitKey(0)
 # cv2.destroyAllWindows()
-cam_num = 0
+cam_num = 4
 
 def main() :
-    cap = cv2.VideoCapture(4)
+    # cap = cv2.VideoCapture(4)
     
     cap = cv2.VideoCapture(cam_num)
     print('set resolution width {} height {}'.format(1920, 1080))
