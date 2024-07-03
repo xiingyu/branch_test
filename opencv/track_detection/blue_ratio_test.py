@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 import matplotlib.pyplot as plt
+import time
 
 plt.ion()
 fig, ax = plt.subplots()
@@ -11,7 +12,8 @@ fig, ax = plt.subplots()
 # two roi set. -> track roi, mission roi.
 # finite state machine by mission roi.
 ##################################
-
+# jisu code x-90% y-30%
+######
 
 ########### parameters ###########
 
@@ -19,7 +21,7 @@ cam_num = 4
 U_detection_threshold = 140 ## 0~255
 img_size_x = 1280
 img_size_y = 720
-ROI_ratio = 0.2
+ROI_ratio = 0.4
 
 #################################
 
@@ -44,12 +46,41 @@ def yuv_detection(img) :
     
     # rescale = np.clip(U_img - V_img, 0, 255).astype(np.uint8)
     ret,U_img_treated = cv2.threshold(U_img, U_detection_threshold, 255, cv2.THRESH_BINARY)
-    histogram = get_histo(U_img_treated)
-    L_end, R_end = end_point_finder(U_img_treated,histogram)
     if ret :
-        filterd = cv2.bitwise_and(img, img, mask=U_img_treated)
-        cv2.imshow("UUUU", filterd)
+        # filterd = cv2.bitwise_and(img, img, mask=U_img_treated)
+        # cv2.imshow("UUUU", filterd)
         
+        contours, _ = cv2.findContours(U_img_treated, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+        max_area = 0
+        max_contour = None
+        for contour in contours:
+            area = cv2.contourArea(contour)
+            if area > max_area:
+                max_area = area
+                max_contour = contour
+
+        if max_contour is not None:
+            max_contour_mask = np.zeros_like(U_img_treated)
+            cv2.drawContours(max_contour_mask, [max_contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+            
+        
+            filterd = cv2.bitwise_and(img, img, mask=max_contour_mask)
+            cv2.imshow("UUUU", filterd)
+        
+    histogram = get_histo(max_contour_mask)
+    midpoint = int(img_size_x / 2)
+    L_histo = histogram[:midpoint]
+    R_histo = histogram[midpoint:]
+    # L_end, R_end = end_point_finder(max_contour_mask,histogram)
+    
+    L_sum = int(np.sum(L_histo) / 255)
+    R_sum = int(np.sum(R_histo) / 255)
+    
+    print(f'{L_sum}   {R_sum}')
+    
+    
+    
         
     
 def get_histo(image) :
@@ -61,6 +92,7 @@ def get_histo(image) :
     ax.clear()
     return histogram
 
+## 폐기 예정.
 def end_point_finder(binary_image,histogram) :
     y,x = binary_image.shape
     midpoint = int(x/2)
@@ -99,6 +131,7 @@ def main() :
             ######## ROI ########
             ROI = image[int(img_size_y * (1-ROI_ratio)):,:].copy()
             cv2.rectangle(image,(0,int(img_size_y * (1-ROI_ratio))),(img_size_x, img_size_y),(255,0,0),2)
+            cv2.line(image,(int(img_size_x / 2 ),int(img_size_y * (1-ROI_ratio))),(int(img_size_x / 2 ), img_size_y),(255,0,0),2)
             
             
             ########     ########
