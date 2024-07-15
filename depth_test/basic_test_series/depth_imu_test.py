@@ -37,9 +37,10 @@ try:
             Start_gyro=gyro
 
         else:
-            print("accelerometer: ", accel-Start_accel)
-            print("gyro: ", gyro)
-
+            # print("accelerometer: ", accel-Start_accel)
+            # print("gyro: ", gyro)
+            print(f'gyro : {gyro}   , accelermeter : {accel-Start_accel}')
+            
             time.sleep(0.5)
 
 
