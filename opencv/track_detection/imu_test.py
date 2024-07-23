@@ -42,8 +42,6 @@ def main() :
     state_window_size = 5 # 상태 필터 값. 높으면 필터 강해짐.
 
     while True :
-            
-        
         f = p.wait_for_frames()
         accel = np.array([f[0].as_motion_frame().get_motion_data().x])
         filtered_accel = apply_complementary_filter(accel)

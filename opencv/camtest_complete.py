@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import time
 
-total_num = 10
+total_num = 14
 cap = []
 img_list = [None] * total_num
 cam_list = []
