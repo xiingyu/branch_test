@@ -33,14 +33,16 @@ def main() :
         aligned_frames = align.process(frames)
         color_frame = aligned_frames.get_color_frame()
         depth_frame = aligned_frames.get_depth_frame()
+        aligned_depth_frame = aligned_frames.get_depth_frame()
 
         img = np.asanyarray(color_frame.get_data())
         depth_image = np.asanyarray(depth_frame.get_data())
         
-        depth_intrinsics = depth_frame.profile.as_video_stream_profile().intrinsics
+        depth_intrinsics = aligned_depth_frame.profile.as_video_stream_profile().intrinsics
         
         
-        result = model.predict(img, conf= 0.5 ) 
+        result = model.predict(img, conf= 0.5,verbose=False ) 
+        print(result[0].boxes)
         annotated_img = result[0].plot()
         
         
@@ -58,7 +60,7 @@ def main() :
             
             annotated_img = cv2.circle(annotated_img,((object_xy[0]),(object_xy[1])),10,(0,0,255), -1, cv2.LINE_AA)
             # annotated_img = cv2.circle(annotated_img,((600),(400)),10,(255,0,0), -1, cv2.LINE_AA)
-            depth = depth_frame.get_distance(object_xy[0], object_xy[1])
+            depth = aligned_depth_frame.get_distance(object_xy[0], object_xy[1])
             depth_point = rs.rs2_deproject_pixel_to_point(depth_intrinsics, [object_xy[0], object_xy[1]], depth)
             cv2.putText(annotated_img, f"{depth_point[0]:.2f}m,  {depth_point[1]:.2f}m,  {depth_point[2]:.2f}m,", (30,30), cv2.FONT_HERSHEY_DUPLEX, 1, (0,0,255),2)
             print(f'{depth_point}')
