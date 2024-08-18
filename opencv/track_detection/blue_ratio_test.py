@@ -25,7 +25,7 @@ ROI_ratio = 0.4
 
 #################################
 
-def hsv_detection(img, lower=(110,50,50), upper=(130,255,255)) :
+def hsv_detection(img, lower=(17,10,10), upper=(130,255,255)) :
     gaussian = cv2.GaussianBlur(img, (0, 0), 1)
     hsv_img = cv2.cvtColor(gaussian, cv2.COLOR_BGR2HSV)
     
