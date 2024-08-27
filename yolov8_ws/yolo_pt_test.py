@@ -42,12 +42,13 @@ def main() :
         
         
         result = model.predict(img, conf= 0.5,verbose=False ) 
-        print(result[0].boxes)
+        # print(result[0].boxes)
         annotated_img = result[0].plot()
         
         
         if len(result[0].boxes.cls) :
             print(result[0].boxes.cls)
+            print(int(result[0].boxes.cls))
             object_xy = np.array(result[0].boxes.xywh.detach().numpy().tolist()[0], dtype='int')
             
             # for r in result :
