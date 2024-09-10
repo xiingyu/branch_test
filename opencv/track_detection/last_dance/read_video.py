@@ -5,7 +5,7 @@ from ultralytics import YOLO
 
 chess_model = YOLO('/home/skh/robot_ws/src/gukbang/gukbang/common/chess.pt')
 
-video_path = "/home/skh/testing_folder/opencv/track_detection/last_dance/drive_video.mp4"
+video_path = "/home/skh/testing_folder/opencv/track_detection/last_dance/output1.mp4"
 cap = cv2.VideoCapture(video_path)
 
 
@@ -39,7 +39,7 @@ def chat_gpt(img) :
 
 def gamma(img) :
     # Gamma 값에 따른 룩업 테이블 생성
-    invGamma = 1.0 / 0.7
+    invGamma = 1.0 / 1.05
     table = np.array([(i / 255.0) ** invGamma * 255 for i in np.arange(0, 256)]).astype("uint8")
     
     # 룩업 테이블을 이용한 Gamma 보정
@@ -54,16 +54,15 @@ def yuv_detection_test(img) :
     
     gaussian1 = cv2.GaussianBlur(img, (9, 9), 2)
     gaussian2 = cv2.GaussianBlur(gaussian1, (9, 9), 2)
-    gaussian3 = cv2.GaussianBlur(gaussian2, (9, 9), 2)
     # wb = cv2.xphoto.createSimpleWB()
     # balanced_img = wb.balanceWhite(gaussian)
-    yuv_img = cv2.cvtColor(gaussian3, cv2.COLOR_BGR2YUV)
+    yuv_img = cv2.cvtColor(gaussian2, cv2.COLOR_BGR2YUV)
     Y_img, U_img, V_img = cv2.split(yuv_img)
     
     uv_diff = cv2.subtract(U_img, V_img)
     
     # rescale = np.clip(U_img - V_img, 0, 255).astype(np.uint8)
-    ret,U_img_treated = cv2.threshold(uv_diff, 12, 255, cv2.THRESH_BINARY)
+    ret,U_img_treated = cv2.threshold(uv_diff, 45, 255, cv2.THRESH_BINARY)
     
     # U_img_treated = cv2.adaptiveThreshold(U_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
     #                                     cv2.THRESH_BINARY, 11, 2)
@@ -85,9 +84,15 @@ def yuv_detection_test(img) :
             # print('max')
             max_contour_mask = np.zeros_like(U_img_treated)
             cv2.drawContours(max_contour_mask, [max_contour], -1, (255, 255, 255), thickness=cv2.FILLED)
+            kernel = np.ones((5, 5), np.uint8)
+            
+            cleaned_mask = cv2.morphologyEx(max_contour_mask, cv2.MORPH_OPEN, kernel)
+            cleaned_mask = cv2.morphologyEx(cleaned_mask, cv2.MORPH_DILATE, kernel)
             
         
             filterd = cv2.bitwise_and(img, img, mask=max_contour_mask)
+            
+            
             cv2.imshow("Camera", filterd)
             cv2.waitKey(1)
     
@@ -115,8 +120,11 @@ def get_hsv_value(event, x, y, flags, param):
         hsv_color = cv2.cvtColor(bgr_color.reshape(1, 1, 3), cv2.COLOR_BGR2HSV)
         yuv_color = cv2.cvtColor(bgr_color.reshape(1, 1, 3), cv2.COLOR_BGR2YUV)
         
+        ycrcb = cv2.cvtColor(bgr_color.reshape(1, 1, 3), cv2.COLOR_BGR2YCrCb)
+
+        
         # HSV 값 출력
-        print(f"Clicked at ({x}, {y}), HSV: {hsv_color[0][0]}   YUV: {yuv_color[0][0]}   bgr_color: {img[y,x]}")
+        print(f"Clicked at ({x}, {y}), HSV: {hsv_color[0][0]}   YUV: {yuv_color[0][0]}   bgr_color: {img[y,x]}   ycrvb: {ycrcb[0][0]}")
         
         
 # 창에 콜백 함수 설정
@@ -134,10 +142,10 @@ while True :
         
         
         gammad = gamma(img)
-        yuv_detection_test(gammad)
+        yuv_detection_test(img)
         
         
-        cv2.imshow("gammad", gammad)
+        # cv2.imshow("gammad", gammad)
         cv2.imshow("plot",plot_img)
         key = cv2.waitKey(1)
         if key == ord('q') :
