@@ -1,0 +1,15 @@
+names:
+- bin
+- glass
+- metal
+- plastic
+nc: 4
+roboflow:
+  license: CC BY 4.0
+  project: deneme-nvvno
+  url: https://universe.roboflow.com/school-kxuuy/deneme-nvvno/dataset/3
+  version: 3
+  workspace: school-kxuuy
+test: /home/skh/testing_folder/trash_sort/deneme-3/test.txt
+train: /home/skh/testing_folder/trash_sort/deneme-3/train.txt
+val: /home/skh/testing_folder/trash_sort/deneme-3/val.txt
