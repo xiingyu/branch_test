@@ -12,4 +12,4 @@ roboflow:
   workspace: school-kxuuy
 test: /home/skh/testing_folder/trash_sort/deneme-3/test.txt
 train: /home/skh/testing_folder/trash_sort/deneme-3/train.txt
-val: /home/skh/testing_folder/trash_sort/deneme-3/val.txt
+val: /home/skh/testing_folder/trash_sort/deneme-3/valid.txt
