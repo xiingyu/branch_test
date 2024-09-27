@@ -39,7 +39,7 @@ def main() :
             key = cv2.waitKey(1)
             if key == ord('q') :
                 break
-            elif key == ord('s') :
+            elif key == ord('+') :
                 cv2.imwrite(f'{path}img{counts+1}.png', image)
                 print(f"image saved! {counts+1}")
             
